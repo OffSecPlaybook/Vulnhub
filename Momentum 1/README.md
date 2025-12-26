@@ -1,19 +1,16 @@
-# Momentum: 1 — VulnHub Walkthrough
+### Momentum: 1 — VulnHub Walkthrough
+<p align="center">
+<b>Difficulty:</b> Medium | <b>Platform:</b> VulnHub | <b>Attack Vector:</b> Web → Client-Side Crypto → Credential Reuse → Redis Abuse | <b>Author:</b> null0xMAAZ
+</p>
 
-> **Difficulty:** Medium
-> **Platform:** VulnHub
-> **Attack Vector:** Web → Client-Side Crypto → Credential Reuse → Redis Abuse
-> **Author:** null0xMAAZ
 
----
-
-## Disclaimer
+### Disclaimer
 
 This walkthrough is intended **strictly for educational purposes** and for use in **authorized lab environments only**. Do **not** attempt these techniques on systems you do not own or have explicit permission to test.
 
 ---
 
-## Lab Setup
+### Lab Setup
 
 * **Attacker Machine:** Kali Linux / Ubuntu (Host)
 * **Target Machine:** Momentum: 1 (VulnHub VM)
@@ -22,7 +19,7 @@ This walkthrough is intended **strictly for educational purposes** and for use i
 
 ---
 
-## Network Discovery
+### Network Discovery
 
 The first step was identifying the target machine on the local network.
 
@@ -38,7 +35,7 @@ This scan revealed the target VM at:
 
 ---
 
-## Service Enumeration
+### Service Enumeration
 
 A full TCP port scan with service and script detection was performed.
 
@@ -57,9 +54,9 @@ The SSH service appeared up-to-date, so focus shifted to **port 80 (HTTP)** for 
 
 ---
 
-## Web Enumeration
+### Web Enumeration
 
-### Directory Bruteforcing
+#### Directory Bruteforcing
 
 Using Gobuster (v2 syntax):
 
@@ -71,7 +68,7 @@ gobuster -m dir \
   -o gobuster-medium.txt
 ```
 
-### Notable Results
+#### Notable Results
 
 ```text
 /js           (301)
@@ -83,7 +80,7 @@ The `/js` directory immediately stood out as a **high-value target**.
 
 ---
 
-## Client-Side JavaScript Analysis
+### Client-Side JavaScript Analysis
 
 Browsing to:
 
@@ -97,7 +94,7 @@ Revealed the file:
 main.js
 ```
 
-### Sensitive Code Found
+#### Sensitive Code Found
 
 ```javascript
 /*
@@ -115,18 +112,18 @@ This immediately indicated:
 
 ---
 
-## Decrypting the Encrypted Value
+### Decrypting the Encrypted Value
 
 The encrypted blob was extracted from the JavaScript file and decrypted locally using Node.js.
 
-### Setup
+#### Setup
 
 ```bash
 npm init -y
 npm install crypto-js
 ```
 
-### Decryption Script
+#### Decryption Script
 
 ```javascript
 const CryptoJS = require("crypto-js");
@@ -141,7 +138,7 @@ console.log("HEX :", CryptoJS.enc.Hex.stringify(decrypted));
 console.log("B64 :", CryptoJS.enc.Base64.stringify(decrypted));
 ```
 
-### Output
+#### Output
 
 ```text
 UTF8: auxerre-alienum##
@@ -149,7 +146,7 @@ UTF8: auxerre-alienum##
 
 ---
 
-## Initial Foothold (SSH)
+### Initial Foothold (SSH)
 
 The decrypted value was tested as credentials.
 
@@ -165,7 +162,7 @@ Password: auxerre-alienum##
 
 ---
 
-## User Flag
+### User Flag
 
 ```bash
 cat user.txt
@@ -178,9 +175,9 @@ flag : 84157165c30ad34d18945b647ec7f647
 
 ---
 
-## Privilege Escalation
+### Privilege Escalation
 
-### Standard Enumeration (Failed)
+#### Standard Enumeration (Failed)
 
 The following techniques were attempted without success:
 
@@ -194,13 +191,13 @@ This indicated a **logic-based or service-based escalation path**.
 
 ---
 
-## Process Enumeration
+### Process Enumeration
 
 ```bash
 ps aux
 ```
 
-### Suspicious Process Identified
+#### Suspicious Process Identified
 
 ```text
 redis   409  ...  /usr/bin/redis-server 127.0.0.1:6379
@@ -214,15 +211,15 @@ Redis was:
 
 ---
 
-## Redis Abuse
+### Redis Abuse
 
-### Access Redis
+#### Access Redis
 
 ```bash
 redis-cli
 ```
 
-### Enumerate Keys
+#### Enumerate Keys
 
 ```redis
 KEYS *
@@ -232,7 +229,7 @@ KEYS *
 1) "rootpass"
 ```
 
-### Retrieve Root Password
+#### Retrieve Root Password
 
 ```redis
 GET rootpass
@@ -244,7 +241,7 @@ m0mentum-al1enum##
 
 ---
 
-## Root Access
+### Root Access
 
 ```bash
 su root
@@ -263,9 +260,9 @@ uid=0(root) gid=0(root) groups=0(root)
 
 ---
 
-## 🏁 Final Notes
+### Final Notes
 
-### Attack Chain Summary
+#### Attack Chain Summary
 
 1. Network discovery
 2. Web enumeration
@@ -278,7 +275,7 @@ uid=0(root) gid=0(root) groups=0(root)
 
 ---
 
-## Mitigations
+### Mitigations
 
 * Never store secrets in client-side JavaScript
 * Avoid hardcoded encryption keys
@@ -288,7 +285,7 @@ uid=0(root) gid=0(root) groups=0(root)
 
 ---
 
-## Key Takeaway
+### Key Takeaway
 
 > *"Castles fall from inside."*
 
@@ -296,7 +293,7 @@ This machine demonstrates how **small client-side mistakes** and **poor internal
 
 ---
 
-## Credits
+### Credits
 
 * VulnHub
 * Momentum VM Author
