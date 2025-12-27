@@ -1,4 +1,6 @@
 ### Momentum: 1 — VulnHub Walkthrough
+
+![Target IP Discovery](screenshots/momentum.png)
 <p align="center">
 <b>Difficulty:</b> Medium | <b>Platform:</b> VulnHub | <b>Attack Vector:</b> Web → Client-Side Crypto → Credential Reuse → Redis Abuse | <b>Author:</b> null0xMAAZ
 </p>
