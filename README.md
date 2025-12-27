@@ -1,1 +1,1 @@
-# Vulnhub
+A curated collection of VulnHub machine walkthroughs focusing on realistic attack chains, manual enumeration, exploit development, and privilege escalation techniques. Each writeup documents methodology, tooling, and security impact in a clear, reproducible format.
